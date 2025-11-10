@@ -76,7 +76,8 @@ def schedule_appointments(current_user):
 
 
 def view_appointments(current_user, is_not_completed=False):
-# By default, show all appointments
+    counter_appointments = 0
+    # By default, show all appointments
     if(is_not_completed):
         print(f"\n[#c65102]-------Show All Uncompleted Appointments: owner name: {current_user.name}------")
     else:
@@ -88,12 +89,16 @@ def view_appointments(current_user, is_not_completed=False):
                     if(is_not_completed):
                         if(appointment.status != "complete"):
                             show_single_appointment(appointment)
+                            counter_appointments += 1
                     else:
                         show_single_appointment(appointment)
+                        counter_appointments += 1
             else:
                 print(f"\n[yellow]{pet.name} has no appointment.")
     else:
         print(f"\n[yellow]{current_user} has no pet")
+    if counter_appointments == 0:
+        print("[yellow]\nThere no appointment to show.")
         return False
     return True
 
