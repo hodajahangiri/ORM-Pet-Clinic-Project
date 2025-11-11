@@ -41,35 +41,37 @@ def schedule_appointments(current_user):
         #Choose the pet you wish to create an appointment for
         choice = input("Select a pet name: ")
         #query them out of the db using their name
-        pet_to_get_appointment = session.query(Pets).where(Pets.name == choice and Pets.owner_id == current_user.id).first()
-        #display vets
-        view_vets()
-        #Choose the vet you with to create an appointment with
-        vet_choice = int(input("Select a vet id: "))
-        #Query them out of the db
-        vet_to_have_appointment = session.query(Vets).where(Vets.id == vet_choice).first()
-        #Gather the rest of the info for the appointment
-        date = input("Enter the Appointment Date('YYYY-mm-dd'): ")
-        #Convert the date string to python date object
-        appointment_date = datetime.strptime(date, date_format)
-        notes = input("Enter Notes(Optional): ")
-        status = input("Enter Status(Optional, default:'Scheduled'): ")
-        if not status:
-            status = "Scheduled"
+        pet_to_get_appointment = session.query(Pets).where(Pets.name.ilike(choice),Pets.owner_id == current_user.id).first()
+        if pet_to_get_appointment:
+            #display vets
+            view_vets()
+            #Choose the vet you with to create an appointment with
+            vet_choice = int(input("Select a vet id: "))
+            #Query them out of the db
+            vet_to_have_appointment = session.query(Vets).where(Vets.id == vet_choice).first()
+            if vet_to_have_appointment:
+                #Gather the rest of the info for the appointment
+                date = input("Enter the Appointment Date('YYYY-mm-dd'): ")
+                #Convert the date string to python date object
+                appointment_date = datetime.strptime(date, date_format)
+                notes = input("Enter Notes(Optional): ")
+                status = input("Enter Status(Optional, default:'Scheduled'): ")
+                if not status:
+                    status = "Scheduled"
             
-        #Create the Appointment() (remind you'll need the pet id and the vet id)
-        appointment_data = {
-            'appointment_date' : appointment_date,
-            'notes' : notes,
-            'status' : status,
-            'pet' : pet_to_get_appointment,
-            'vet' : vet_to_have_appointment
-        }
-        new_appointment = Appointments(**appointment_data)
-        session.add(new_appointment)
-        session.commit()
-        print(f"[green]appointment {new_appointment.id} successfully added.")
-        show_single_appointment(new_appointment)
+                #Create the Appointment() (remind you'll need the pet id and the vet id)
+                appointment_data = {
+                    'appointment_date' : appointment_date,
+                    'notes' : notes,
+                    'status' : status,
+                    'pet' : pet_to_get_appointment,
+                    'vet' : vet_to_have_appointment
+                }
+                new_appointment = Appointments(**appointment_data)
+                session.add(new_appointment)
+                session.commit()
+                print(f"[green]appointment {new_appointment.id} successfully added.")
+                show_single_appointment(new_appointment)
     except Exception as e:
         print("[red]An error occurred while trying to schedule an appointment")
         print(e)  
@@ -114,14 +116,15 @@ def reschedule_appointment(current_user):
             #Select an appointment by id
             choice = int(input("Enter the appointment id: "))
             appointment_to_update = session.query(Appointments).where(Appointments.id == choice).first()
-            #ask user for new date
-            new_date = input("Enter the Rescheduled Appointment Date('YYYY-mm-dd'): ")
-            #convert date
-            appointment_new_date = datetime.strptime(new_date, date_format)
-            #update the appointment date
-            appointment_to_update.appointment_date = appointment_new_date
-            session.commit()
-            print(f"[green]appointment {appointment_to_update.id} updated successfully.")
+            if appointment_to_update and appointment_to_update.pet.owner_id == current_user.id:
+                #ask user for new date
+                new_date = input("Enter the Rescheduled Appointment Date('YYYY-mm-dd'): ")
+                #convert date
+                appointment_new_date = datetime.strptime(new_date, date_format)
+                #update the appointment date
+                appointment_to_update.appointment_date = appointment_new_date
+                session.commit()
+                print(f"[green]appointment {appointment_to_update.id} updated successfully.")
         except Exception as e:
             print("[red]An error occurred while trying to reschedule the appointment")
             print(e)  
@@ -137,11 +140,12 @@ def complete_appointment(current_user):
             choice = int(input("Enter the appointment id: "))
             #query the appointment by id
             appointment_to_complete = session.query(Appointments).where(Appointments.id == choice).first()
-            #change appointment.status to 'complete"
-            appointment_to_complete.status = "complete"
-            session.commit()
-            #print success message
-            print(f"[green]appointment {appointment_to_complete.id} is successfully completed.")
+            if appointment_to_complete and appointment_to_complete.pet.owner_id == current_user.id:
+                #change appointment.status to 'complete"
+                appointment_to_complete.status = "complete"
+                session.commit()
+                #print success message
+                print(f"[green]appointment {appointment_to_complete.id} is successfully completed.")
         except Exception as e:
             print("[red]An error occurred while trying to complete the appointment")
             print(e)  
@@ -156,14 +160,15 @@ def cancel_appointment(current_user):
             choice = int(input("Enter the appointment id you want to cancel: "))
             #query the appointment by id
             appointment_to_cancel = session.query(Appointments).where(Appointments.id == choice).first()
-            confirm_choice = input("Type 'delete' to confirm you wish to delete your account: ")
-            if confirm_choice == "delete":
-                session.delete(appointment_to_cancel)
-                #commit changes
-                session.commit()
-                print(f"[green]Successfully appointment {appointment_to_cancel.id} canceled.")
-            else:
-                print("[red]Invalid choice.")
+            if appointment_to_cancel and appointment_to_cancel.pet.owner_id == current_user.id:
+                confirm_choice = input("Type 'delete' to confirm you wish to delete your appointment: ")
+                if confirm_choice == "delete":
+                    session.delete(appointment_to_cancel)
+                    #commit changes
+                    session.commit()
+                    print(f"[green]Successfully appointment {appointment_to_cancel.id} canceled.")
+                else:
+                    print("[red]Invalid choice.")
         except Exception as e:
             print("[red]An error occurred while trying to cancel the appointment")
             print(e)  
