@@ -62,7 +62,7 @@ def update_pet(current_user):
         #allow them to select a pet BY Name
         choice = input("Select a pet name: ")
         #query that pet from the database
-        pet_to_update = session.query(Pets).where(Pets.name == choice and Pets.owner_id == current_user.id).first()
+        pet_to_update = session.query(Pets).where(Pets.name.ilike(choice) and Pets.owner_id == current_user.id).first()
         #get updated info from the user
         if pet_to_update:
             show_single_pet(pet_to_update)
@@ -82,6 +82,7 @@ def update_pet(current_user):
                 pet_to_update.age = int(age)
             #commit changes
             session.commit()
+            print("[green]------------- Updated Pet ----------")
             #print new pet info
             show_single_pet(pet_to_update)
         else:
