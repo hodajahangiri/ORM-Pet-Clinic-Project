@@ -62,7 +62,7 @@ def update_pet(current_user):
         #allow them to select a pet BY Name
         choice = input("Select a pet name: ")
         #query that pet from the database
-        pet_to_update = session.query(Pets).where(Pets.name.ilike(choice) and Pets.owner_id == current_user.id).first()
+        pet_to_update = session.query(Pets).where(Pets.name.ilike(choice), Pets.owner_id == current_user.id).first()
         #get updated info from the user
         if pet_to_update:
             show_single_pet(pet_to_update)
@@ -99,10 +99,10 @@ def delete_pet(current_user):
             #allow them to select a pet BY NAME
             choice = input("Select a pet name: ")
             #query that pet from the database
-            pet_to_delete = session.query(Pets).where(Pets.name == choice and Pets.owner_id == current_user.id).first()
+            pet_to_delete = session.query(Pets).where(Pets.name.ilike(choice), Pets.owner_id == current_user.id).first()
             show_single_pet(pet_to_delete)
             #Ask user if they are sure they want to delete this pet
-            confirm_choice = input("Type 'delete' to confirm you wish to delete your account: ")
+            confirm_choice = input(f"Type 'delete' to confirm you wish to delete {pet_to_delete.name}: ")
             if confirm_choice == "delete":
                 if len(pet_to_delete.appointments) > 0:
                     session.query(Appointments).where(Appointments.pet_id == pet_to_delete.id).delete(synchronize_session=False)
