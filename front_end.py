@@ -48,7 +48,7 @@ def owner_menu(current_user):
             view_profile(current_user)
         elif choice == '2':
             #update profile function, and returns the updated user
-            update_profile(current_user)
+            current_user = update_profile(current_user)
         elif choice == '3':
             #delete the current users account
             is_deleted = delete_user(current_user)
